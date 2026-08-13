@@ -1,17 +1,18 @@
-import fitz  # PyMuPDF
 import re
+from pypdf import PdfReader
 
 def extract_text_from_pdf(pdf_path):
     """
-    Extracts text from a given PDF file.
+    Extracts text from a given PDF file using pure-Python pypdf.
     Returns the extracted string, or None if it fails.
     """
     try:
-        doc = fitz.open(pdf_path)
+        reader = PdfReader(pdf_path)
         text = ""
-        for page_num in range(doc.page_count):
-            page = doc.load_page(page_num)
-            text += page.get_text("text") + "\n"
+        for page in reader.pages:
+            extracted = page.extract_text()
+            if extracted:
+                text += extracted + "\n"
         
         # Clean unnecessary whitespace
         text = re.sub(r'\s+', ' ', text).strip()
