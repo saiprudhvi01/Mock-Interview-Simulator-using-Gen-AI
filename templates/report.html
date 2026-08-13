@@ -42,37 +42,35 @@
     <h3 class="mb-4 text-center gradient-text">Detailed Question Breakdown</h3>
 
     <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-        {% for ev in report.evaluations %}
+        {% for result in report.results %}
         <div class="glass-panel" style="padding: 1.5rem; border: 1px solid var(--card-border);">
             <div class="d-flex justify-between align-center mb-2" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
-                <h3 style="margin: 0; font-size: 1.2rem;">Question {{ loop.index }}</h3>
-                <div style="font-size: 1.5rem; font-weight: bold; {% if ev.score >= 80 %}color: var(--success);{% elif ev.score >= 60 %}color: var(--warning);{% else %}color: var(--error);{% endif %}">
-                    {{ ev.score }}/100
+                <h3 style="margin: 0; font-size: 1.2rem;">Question {{ result.question_number }}</h3>
+                <div style="font-size: 1.5rem; font-weight: bold; {% if result.score >= 80 %}color: var(--success);{% elif result.score >= 60 %}color: var(--warning);{% else %}color: var(--error);{% endif %}">
+                    {{ result.score }}/100
                 </div>
             </div>
             
             <div class="mb-2 mt-2">
-                <span class="badge" style="background: rgba(255,255,255,0.1); color: var(--text-main);">{{ ev.rating }}</span>
+                <p style="color: var(--text-main); font-weight: 500; margin-bottom: 0.5rem;">{{ result.question }}</p>
             </div>
 
-            <p style="color: var(--text-main); line-height: 1.5; margin-bottom: 1.5rem;">{{ ev.feedback }}</p>
+            <div class="mb-2">
+                <span class="badge" style="background: rgba(255,255,255,0.1); color: var(--text-main);">
+                    {% if result.score >= 90 %}Excellent{% elif result.score >= 75 %}Good{% elif result.score >= 60 %}Fair{% else %}Poor{% endif %}
+                </span>
+            </div>
+
+            <p style="color: var(--text-main); line-height: 1.5; margin-bottom: 1.5rem;">{{ result.feedback }}</p>
             
             <div class="feedback-grid">
-                <div style="background: var(--success-bg); border-radius: 8px; padding: 1rem;">
-                    <strong style="color: var(--success); display: block; margin-bottom: 0.5rem;">Strengths:</strong>
-                    <ul style="margin: 0; padding-left: 1.2rem; color: #D1FAE5; font-size: 0.9rem;">
-                        {% for s in ev.strengths %}
-                        <li>{{ s }}</li>
-                        {% endfor %}
-                    </ul>
+                <div style="background: rgba(99, 102, 241, 0.05); border-radius: 8px; padding: 1rem;">
+                    <strong style="color: var(--primary); display: block; margin-bottom: 0.5rem;">Your Answer:</strong>
+                    <p style="margin: 0; color: var(--text-main); font-size: 0.9rem; line-height: 1.4;">{{ result.candidate_answer }}</p>
                 </div>
-                <div style="background: var(--error-bg); border-radius: 8px; padding: 1rem;">
-                    <strong style="color: var(--error); display: block; margin-bottom: 0.5rem;">Areas to Improve:</strong>
-                    <ul style="margin: 0; padding-left: 1.2rem; color: #FEE2E2; font-size: 0.9rem;">
-                        {% for i in ev.improvements %}
-                        <li>{{ i }}</li>
-                        {% endfor %}
-                    </ul>
+                <div style="background: rgba(139, 92, 246, 0.05); border-radius: 8px; padding: 1rem;">
+                    <strong style="color: var(--secondary); display: block; margin-bottom: 0.5rem;">Suggested Answer:</strong>
+                    <p style="margin: 0; color: var(--text-main); font-size: 0.9rem; line-height: 1.4;">{{ result.suggested_answer }}</p>
                 </div>
             </div>
         </div>

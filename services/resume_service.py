@@ -37,8 +37,8 @@ def process_resume_upload(file, upload_folder, allowed_extensions):
                 "resume_text": extracted_text,
                 "questions": [],
                 "current_question_index": 0,
-                "answers": [],
-                "evaluations": []
+                "answers": [],  # Stores text answers only
+                "evaluations": None  # Will store batch evaluation results after interview
             }
             
             return {"session_id": session_id, "message": "Resume uploaded successfully"}, 200

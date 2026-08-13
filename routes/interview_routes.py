@@ -3,14 +3,12 @@ import uuid
 from flask import Blueprint, request, jsonify, current_app
 from services.resume_service import get_session
 from services.question_service import QuestionService
-from services.speech_service import SpeechService
 from services.evaluation_service import EvaluationService
 from werkzeug.utils import secure_filename
 
 interview_bp = Blueprint('interview', __name__)
 
 question_svc = QuestionService()
-speech_svc = SpeechService()
 eval_svc = EvaluationService()
 
 @interview_bp.route('/generate', methods=['POST'])
@@ -47,51 +45,24 @@ def get_current_question(session_id):
         "total": len(session['questions'])
     })
 
-@interview_bp.route('/transcribe', methods=['POST'])
-def transcribe_audio():
-    if 'audio' not in request.files:
-        return jsonify({"error": "No audio file provided"}), 400
-        
-    file = request.files['audio']
-    filename = secure_filename(f"{uuid.uuid4().hex}_{file.filename}")
-    filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-    
-    try:
-        file.save(filepath)
-        transcript = speech_svc.transcribe(filepath)
-        if not transcript:
-            return jsonify({"error": "Failed to transcribe audio"}), 500
-            
-        return jsonify({"transcript": transcript})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    finally:
-        if os.path.exists(filepath):
-            try:
-                os.remove(filepath)
-            except:
-                pass
-
-@interview_bp.route('/evaluate', methods=['POST'])
-def evaluate_answer():
+@interview_bp.route('/submit_answer', methods=['POST'])
+def submit_answer():
+    """
+    Stores the candidate's text answer without evaluation.
+    Evaluation happens once after all 20 questions are completed.
+    """
     data = request.json
     session_id = data.get('session_id')
-    question_text = data.get('question')
     answer = data.get('answer')
     
     session = get_session(session_id)
     if not session:
         return jsonify({"error": "Session not found"}), 404
-        
-    evaluation = eval_svc.evaluate_answer(session['resume_text'], question_text, answer)
-    if not evaluation:
-        return jsonify({"error": "Failed to evaluate answer"}), 500
-        
-    # Save the answer and evaluation for the final report
-    session['answers'].append(answer)
-    session['evaluations'].append(evaluation)
     
-    return jsonify(evaluation)
+    # Store the answer
+    session['answers'].append(answer)
+    
+    return jsonify({"status": "success"})
 
 @interview_bp.route('/next', methods=['POST'])
 def next_question():
@@ -106,21 +77,53 @@ def next_question():
     
     return jsonify({"status": "success"})
 
+@interview_bp.route('/evaluate_batch', methods=['POST'])
+def evaluate_batch():
+    """
+    Evaluates all 20 answers in a single API call after the interview is complete.
+    """
+    data = request.json
+    session_id = data.get('session_id')
+    
+    session = get_session(session_id)
+    if not session:
+        return jsonify({"error": "Session not found"}), 404
+    
+    # Check if we have all 20 answers
+    if len(session['answers']) != len(session['questions']):
+        return jsonify({"error": "Not all answers have been submitted"}), 400
+    
+    # Prepare question-answer pairs
+    questions_and_answers = []
+    for i, question in enumerate(session['questions']):
+        questions_and_answers.append((question['question'], session['answers'][i]))
+    
+    # Call batch evaluation
+    evaluation_result = eval_svc.evaluate_batch(questions_and_answers)
+    if not evaluation_result:
+        return jsonify({"error": "Failed to evaluate answers"}), 500
+    
+    # Store the batch evaluation results
+    session['evaluations'] = evaluation_result
+    
+    return jsonify(evaluation_result)
+
 @interview_bp.route('/report/<session_id>', methods=['GET'])
 def get_report(session_id):
     session = get_session(session_id)
     if not session:
         return jsonify({"error": "Session not found"}), 404
         
-    evaluations = session['evaluations']
-    if not evaluations:
+    evaluations = session.get('evaluations')
+    if not evaluations or 'results' not in evaluations:
         return jsonify({"error": "No evaluations found"}), 400
-        
-    total_score = sum(ev.get('score', 0) for ev in evaluations)
-    average_score = total_score / len(evaluations) if evaluations else 0
+    
+    results = evaluations['results']
+    total_score = sum(result.get('score', 0) for result in results)
+    average_score = total_score / len(results) if results else 0
     
     return jsonify({
         "overall_score": int(average_score),
         "total_questions": len(session['questions']),
-        "evaluations": evaluations
+        "results": results
     })

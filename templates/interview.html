@@ -43,63 +43,9 @@
         </div>
     </div>
 </div>
-
-<!-- Evaluation Screen -->
-<div id="evaluation-screen" class="card slide-up" style="display: none; width: 100%; max-width: 900px;">
-    <!-- Progress Bar -->
-    <div class="progress-container">
-        <div id="eval-progress" class="progress-bar"></div>
-    </div>
-    
-    <div class="d-flex justify-between align-center mb-4" style="border-bottom: 1px solid var(--card-border); padding-bottom: 1rem;">
-        <h2 style="margin: 0;" class="gradient-text">AI Evaluation</h2>
-        <div style="text-align: right;">
-            <div style="font-size: 2.5rem; font-weight: bold; line-height: 1;"><span id="eval-score" style="color: var(--success);">0</span><span style="font-size: 1.2rem; color: var(--text-muted);">/100</span></div>
-            <div id="eval-rating" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; font-weight: 600;">Rating</div>
-        </div>
-    </div>
-
-    <div class="feedback-section">
-        <div class="feedback-box">
-            <h4 style="color: var(--text-muted); margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase;">You Said:</h4>
-            <div id="eval-transcript" style="font-style: italic; color: var(--text-main);"></div>
-        </div>
-
-        <div class="feedback-box" style="border-color: rgba(99, 102, 241, 0.3);">
-            <h4 style="color: var(--primary); margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase;">Feedback:</h4>
-            <p id="eval-feedback" style="margin: 0;"></p>
-        </div>
-
-        <div class="feedback-grid mb-4">
-            <div class="glass-panel" style="background: var(--success-bg); border-color: rgba(16, 185, 129, 0.3); padding: 1.5rem;">
-                <h4 style="color: var(--success); margin-top: 0; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>
-                    Strengths
-                </h4>
-                <ul id="eval-strengths" style="margin: 0; padding-left: 1.2rem; color: #D1FAE5; line-height: 1.6;"></ul>
-            </div>
-            <div class="glass-panel" style="background: var(--error-bg); border-color: rgba(239, 68, 68, 0.3); padding: 1.5rem;">
-                <h4 style="color: var(--error); margin-top: 0; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    To Improve
-                </h4>
-                <ul id="eval-improvements" style="margin: 0; padding-left: 1.2rem; color: #FEE2E2; line-height: 1.6;"></ul>
-            </div>
-        </div>
-
-        <div class="feedback-box" style="background: rgba(139, 92, 246, 0.05); border-color: rgba(139, 92, 246, 0.3);">
-            <h4 style="color: var(--secondary); margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase;">Suggested Perfect Answer:</h4>
-            <div id="eval-suggested" style="line-height: 1.6;"></div>
-        </div>
-    </div>
-
-    <div class="text-center mt-4">
-        <button id="next-question-btn" class="btn btn-primary btn-large" style="max-width: 400px;">Next Question →</button>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/recorder.js') }}?v=4"></script>
-<script src="{{ url_for('static', filename='js/interview.js') }}?v=4"></script>
+<script src="{{ url_for('static', filename='js/recorder.js') }}?v=5"></script>
+<script src="{{ url_for('static', filename='js/interview.js') }}?v=5"></script>
 {% endblock %}

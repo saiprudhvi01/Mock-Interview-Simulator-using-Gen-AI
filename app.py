@@ -26,10 +26,12 @@ def interview():
 
 @app.route('/report')
 def report():
-    return render_template('report.html')
-
-from routes.interview_routes import transcribe_audio
-app.add_url_rule('/api/transcribe', 'transcribe_audio', transcribe_audio, methods=['POST'])
+    # Report is now handled by resume_routes.py
+    from flask import request, redirect
+    session_id = request.args.get('session_id')
+    if session_id:
+        return redirect(f'/api/resume/report?session_id={session_id}')
+    return redirect('/')
 
 @app.route('/api/health')
 def health_check():

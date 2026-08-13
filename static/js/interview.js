@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const loadingScreen = document.getElementById('loading-screen');
     const loadingMessage = document.getElementById('loading-message');
     const interviewScreen = document.getElementById('interview-screen');
-    const evaluationScreen = document.getElementById('evaluation-screen');
     
     const questionCounter = document.getElementById('question-counter');
     const questionCategory = document.getElementById('question-category');
@@ -39,13 +38,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     async function loadCurrentQuestion() {
         loadingScreen.style.display = 'none';
-        evaluationScreen.style.display = 'none';
         
         const res = await fetch(`/api/interview/question/${sessionId}`);
         const data = await res.json();
 
         if (data.status === "completed") {
-            window.location.href = `/report?session_id=${sessionId}`;
+            // All questions done, trigger batch evaluation
+            await performBatchEvaluation();
             return;
         }
 
@@ -82,47 +81,41 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Handle Answer Submission
     document.getElementById('submit-answer-btn').addEventListener('click', async () => {
-        if (!audioBlob) return;
+        if (!audioBlob && !transcript) return;
         
         const submitBtn = document.getElementById('submit-answer-btn');
         submitBtn.disabled = true;
         
         interviewScreen.style.display = 'none';
-        loadingMessage.textContent = 'Transcribing your answer...';
+        loadingMessage.textContent = 'Saving your answer...';
         loadingScreen.style.display = 'block';
 
         try {
-            // 1. Transcribe
-            const formData = new FormData();
-            formData.append('audio', audioBlob, 'answer.webm');
+            // Use transcript from Web Speech API, fallback to empty string if not available
+            const answerText = transcript || '';
             
-            const transRes = await fetch('/api/interview/transcribe', {
-                method: 'POST',
-                body: formData
-            });
-            const transData = await transRes.json();
-            
-            if (!transRes.ok) throw new Error(transData.error || "Transcription failed");
-            
-            const transcript = transData.transcript;
-
-            // 2. Evaluate
-            loadingMessage.textContent = 'Evaluating your answer...';
-            
-            const evalRes = await fetch('/api/interview/evaluate', {
+            // Submit answer without evaluation
+            const submitRes = await fetch('/api/interview/submit_answer', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     session_id: sessionId,
-                    question: currentQuestionData.question.question,
-                    answer: transcript
+                    answer: answerText
                 })
             });
             
-            const evalData = await evalRes.json();
-            if (!evalRes.ok) throw new Error(evalData.error || "Evaluation failed");
+            const submitData = await submitRes.json();
+            if (!submitRes.ok) throw new Error(submitData.error || "Failed to submit answer");
             
-            showEvaluation(transcript, evalData);
+            // Move to next question
+            await fetch('/api/interview/next', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: sessionId })
+            });
+            
+            // Load next question or proceed to batch evaluation
+            await loadCurrentQuestion();
             
         } catch (err) {
             console.error(err);
@@ -134,60 +127,33 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    function showEvaluation(transcript, evalData) {
-        loadingScreen.style.display = 'none';
-        evaluationScreen.style.display = 'block';
-        
-        // Re-trigger animation
-        evaluationScreen.classList.remove('slide-up');
-        void evaluationScreen.offsetWidth;
-        evaluationScreen.classList.add('slide-up');
-        
-        // Update Progress
-        const percent = (currentQuestionData.current_index / currentQuestionData.total) * 100;
-        document.getElementById('eval-progress').style.width = `${percent}%`;
-        
-        document.getElementById('eval-score').textContent = evalData.score;
-        document.getElementById('eval-rating').textContent = evalData.rating;
-        document.getElementById('eval-transcript').textContent = `"${transcript}"`;
-        document.getElementById('eval-feedback').textContent = evalData.feedback;
-        document.getElementById('eval-suggested').textContent = evalData.suggested_answer;
-        
-        const strengthsList = document.getElementById('eval-strengths');
-        strengthsList.innerHTML = '';
-        (evalData.strengths || []).forEach(s => {
-            const li = document.createElement('li');
-            li.textContent = s;
-            strengthsList.appendChild(li);
-        });
-        
-        const imprList = document.getElementById('eval-improvements');
-        imprList.innerHTML = '';
-        (evalData.improvements || []).forEach(i => {
-            const li = document.createElement('li');
-            li.textContent = i;
-            imprList.appendChild(li);
-        });
-    }
-
-    // Handle Next Question
-    document.getElementById('next-question-btn').addEventListener('click', async () => {
-        const btn = document.getElementById('next-question-btn');
-        btn.disabled = true;
+    async function performBatchEvaluation() {
+        loadingMessage.textContent = 'Evaluating all your answers...';
+        loadingScreen.style.display = 'block';
         
         try {
-            await fetch('/api/interview/next', {
+            const evalRes = await fetch('/api/interview/evaluate_batch', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ session_id: sessionId })
             });
             
-            await loadCurrentQuestion();
+            const evalData = await evalRes.json();
+            if (!evalRes.ok) throw new Error(evalData.error || "Batch evaluation failed");
+            
+            // Redirect to report page
+            window.location.href = `/report?session_id=${sessionId}`;
+            
         } catch (err) {
             console.error(err);
-            alert("Error loading next question.");
-        } finally {
-            btn.disabled = false;
+            alert("Error during evaluation: " + err.message);
+            loadingMessage.textContent = 'Evaluation failed. Click to retry.';
+            
+            // Add retry functionality
+            loadingScreen.onclick = async () => {
+                loadingScreen.onclick = null;
+                await performBatchEvaluation();
+            };
         }
-    });
+    }
 });
