@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Interview Coach{% endblock %}</title>
+    <!-- Use Inter font for a modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="/" class="logo" style="background: linear-gradient(135deg, #818CF8, #C084FC); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🎙️ AI Interview Coach</a>
+            <button id="theme-toggle" class="btn btn-outline" style="padding: 0.5rem 1rem; border-radius: 20px;">☀️ Light Mode</button>
+        </div>
+    </nav>
+    <main class="container content">
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 AI Interview Coach Platform</p>
+        </div>
+    </footer>
+    <script>
+        const themeBtn = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        // Load saved theme
+        if (localStorage.getItem('theme') === 'light') {
+            body.classList.add('light-mode');
+            themeBtn.textContent = '🌙 Dark Mode';
+        }
+        
+        themeBtn.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            if (body.classList.contains('light-mode')) {
+                localStorage.setItem('theme', 'light');
+                themeBtn.textContent = '🌙 Dark Mode';
+            } else {
+                localStorage.setItem('theme', 'dark');
+                themeBtn.textContent = '☀️ Light Mode';
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

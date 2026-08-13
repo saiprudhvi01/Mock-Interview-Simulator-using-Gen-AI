@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Interview Coach - Live Session{% endblock %}
+
+{% block content %}
+<div id="loading-screen" class="card text-center" style="display: none; max-width: 600px;">
+    <div class="spinner mb-4"></div>
+    <h2 id="loading-message" class="gradient-text">Preparing your personalized questions...</h2>
+    <p style="color: var(--text-muted);">This takes just a moment based on your resume.</p>
+</div>
+
+<div id="interview-screen" class="card fade-in" style="display: none; width: 100%; max-width: 900px;">
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div id="interview-progress" class="progress-bar"></div>
+    </div>
+    
+    <div class="d-flex justify-between align-center mb-4">
+        <h3 id="question-counter" style="margin: 0; color: var(--text-muted); font-weight: 500;">Question 1 of 20</h3>
+        <span id="question-category" class="badge">Category</span>
+    </div>
+    
+    <div style="min-height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem;">
+        <h2 id="question-text" class="text-center" style="font-size: 1.8rem; line-height: 1.4; margin: 0;">Loading question...</h2>
+    </div>
+
+    <!-- Recording Controls -->
+    <div id="recorder-controls" class="text-center p-4" style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 2rem;">
+        <div id="recording-status" style="margin-bottom: 1rem; color: var(--error); font-weight: bold; display: none; align-items: center; justify-content: center; gap: 8px;">
+            <span style="display: inline-block; width: 12px; height: 12px; background: var(--error); border-radius: 50%; animation: pulseGlow 1.5s infinite;"></span>
+            Recording: <span id="recording-timer">00:00</span>
+        </div>
+        
+        <button id="start-record-btn" class="btn btn-primary btn-large" style="max-width: 300px;">🎙️ Start Answering</button>
+        <button id="stop-record-btn" class="btn btn-error btn-large" style="display: none; max-width: 300px;">⏹️ Stop Recording</button>
+        
+        <div id="audio-playback-container" style="display: none; margin-top: 1.5rem; flex-direction: column; align-items: center;">
+            <audio id="audio-playback" controls style="width: 100%; max-width: 500px; margin-bottom: 1.5rem; border-radius: 8px;"></audio>
+            <div style="display: flex; gap: 15px; justify-content: center; width: 100%; max-width: 500px;">
+                <button id="re-record-btn" class="btn btn-outline" style="flex: 1;">Retry</button>
+                <button id="submit-answer-btn" class="btn btn-primary" style="flex: 2;">Submit Answer 🚀</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Evaluation Screen -->
+<div id="evaluation-screen" class="card slide-up" style="display: none; width: 100%; max-width: 900px;">
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div id="eval-progress" class="progress-bar"></div>
+    </div>
+    
+    <div class="d-flex justify-between align-center mb-4" style="border-bottom: 1px solid var(--card-border); padding-bottom: 1rem;">
+        <h2 style="margin: 0;" class="gradient-text">AI Evaluation</h2>
+        <div style="text-align: right;">
+            <div style="font-size: 2.5rem; font-weight: bold; line-height: 1;"><span id="eval-score" style="color: var(--success);">0</span><span style="font-size: 1.2rem; color: var(--text-muted);">/100</span></div>
+            <div id="eval-rating" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; font-weight: 600;">Rating</div>
+        </div>
+    </div>
+
+    <div class="feedback-section">
+        <div class="feedback-box">
+            <h4 style="color: var(--text-muted); margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase;">You Said:</h4>
+            <div id="eval-transcript" style="font-style: italic; color: var(--text-main);"></div>
+        </div>
+
+        <div class="feedback-box" style="border-color: rgba(99, 102, 241, 0.3);">
+            <h4 style="color: var(--primary); margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase;">Feedback:</h4>
+            <p id="eval-feedback" style="margin: 0;"></p>
+        </div>
+
+        <div class="feedback-grid mb-4">
+            <div class="glass-panel" style="background: var(--success-bg); border-color: rgba(16, 185, 129, 0.3); padding: 1.5rem;">
+                <h4 style="color: var(--success); margin-top: 0; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>
+                    Strengths
+                </h4>
+                <ul id="eval-strengths" style="margin: 0; padding-left: 1.2rem; color: #D1FAE5; line-height: 1.6;"></ul>
+            </div>
+            <div class="glass-panel" style="background: var(--error-bg); border-color: rgba(239, 68, 68, 0.3); padding: 1.5rem;">
+                <h4 style="color: var(--error); margin-top: 0; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    To Improve
+                </h4>
+                <ul id="eval-improvements" style="margin: 0; padding-left: 1.2rem; color: #FEE2E2; line-height: 1.6;"></ul>
+            </div>
+        </div>
+
+        <div class="feedback-box" style="background: rgba(139, 92, 246, 0.05); border-color: rgba(139, 92, 246, 0.3);">
+            <h4 style="color: var(--secondary); margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase;">Suggested Perfect Answer:</h4>
+            <div id="eval-suggested" style="line-height: 1.6;"></div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <button id="next-question-btn" class="btn btn-primary btn-large" style="max-width: 400px;">Next Question →</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/recorder.js') }}?v=4"></script>
+<script src="{{ url_for('static', filename='js/interview.js') }}?v=4"></script>
+{% endblock %}

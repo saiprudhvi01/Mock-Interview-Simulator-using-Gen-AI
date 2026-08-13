@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Interview Coach - Dashboard{% endblock %}
+
+{% block content %}
+<!-- Splash Screen Overlay -->
+<div id="splash-screen">
+    <h1>🎙️ AI Interview Coach</h1>
+    <p>Your AI-Powered Interview Practice Platform</p>
+</div>
+
+<!-- Introduction & Upload Section -->
+<div class="card fade-in delay-1" id="intro-section" style="max-width: 800px; display: none;">
+    <div class="text-center mb-4" style="text-align: center; width: 100%;">
+        <h1 class="gradient-text" style="text-align: center; margin: 0 auto;">Master Your Next Interview</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
+            Experience a highly realistic, professional AI mock interview tailored precisely to your resume and target role.
+        </p>
+    </div>
+
+    <div class="features-grid">
+        <div class="feature-box">
+            <h4>🎯 Tailored to You</h4>
+            <p>Questions are generated dynamically based on your unique skills, projects, and experiences.</p>
+        </div>
+        <div class="feature-box">
+            <h4>🎙️ Voice Interaction</h4>
+            <p>Answer questions verbally just like a real interview. The AI transcribes and evaluates your speech.</p>
+        </div>
+        <div class="feature-box">
+            <h4>📈 Comprehensive Feedback</h4>
+            <p>Receive immediate scoring, strength analysis, and suggested improvements after every answer.</p>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <h3 class="mb-2 text-center" style="text-align: center;">The 20-Question Structure</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; margin: 0 auto;">Your interview follows a realistic flow, gradually increasing in difficulty.</p>
+        
+        <div class="sequence-bar mt-2" style="margin-top: 1rem;">
+            <div class="seq-hr" style="width: 10%;" title="2 HR Questions"></div>
+            <div class="seq-tech" style="width: 40%;" title="8 Technical Questions"></div>
+            <div class="seq-hr" style="width: 10%;" title="2 HR Questions"></div>
+            <div class="seq-tech" style="width: 35%;" title="7 Scenario/Tech Questions"></div>
+            <div class="seq-hr" style="width: 5%;" title="1 Final HR Question"></div>
+        </div>
+        <div class="sequence-labels">
+            <span>Intro (HR)</span>
+            <span>Core Technical</span>
+            <span>Behavioral</span>
+            <span>Advanced Scenarios</span>
+            <span>Closing</span>
+        </div>
+    </div>
+
+    <!-- Upload Form Embedded -->
+    <div style="border-top: 1px solid var(--card-border); padding-top: 2rem;">
+        <h3 class="text-center mb-4" style="text-align: center;">Ready to begin? Upload your resume.</h3>
+        <form id="upload-form" style="display: flex; flex-direction: column; align-items: center;">
+            <div class="drop-zone" id="drop-zone" style="max-width: 600px; width: 100%;">
+                <div class="drop-zone__icon">📄</div>
+                <span style="font-weight: 500; margin-bottom: 0.5rem;">Drag and drop your Resume (PDF)</span>
+                <span style="font-size: 0.85rem;">or click to browse your files</span>
+                <input type="file" name="resume" id="file-input" class="drop-zone__input" accept="application/pdf">
+            </div>
+            <div class="text-center mt-2" id="file-info" style="display: none; color: var(--success); text-align: center;">
+                ✓ <span id="file-name"></span> selected
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-large mt-4" id="start-btn" disabled style="display: block; margin: 1.5rem auto 0; max-width: 300px;">
+                🚀 Start Mock Interview
+            </button>
+        </form>
+        
+        <div id="loading-state" style="display: none;" class="mt-4 text-center">
+            <div class="spinner"></div>
+            <p id="loading-text" style="color: var(--primary);">Analyzing your resume and generating your 20 questions...</p>
+        </div>
+        
+        <div id="error-message" class="alert alert-error mt-4" style="display: none;"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/upload.js') }}?v=3"></script>
+{% endblock %}

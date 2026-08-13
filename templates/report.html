@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Interview Coach - Final Report{% endblock %}
+
+{% block content %}
+<div class="card slide-up" style="max-width: 900px; width: 100%;">
+    <div class="text-center mb-4">
+        <h1 class="gradient-text">Interview Complete!</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem;">Here is your comprehensive evaluation across all 20 questions.</p>
+    </div>
+
+    <!-- Overview Metrics -->
+    <div class="features-grid mb-4">
+        <div class="feature-box text-center" style="display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(99, 102, 241, 0.05); border-color: rgba(99, 102, 241, 0.3);">
+            <h4 style="color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.85rem;">Overall Score</h4>
+            <div style="font-size: 4rem; font-weight: 700; color: var(--primary); line-height: 1;">
+                {{ report.overall_score }}<span style="font-size: 1.5rem; color: var(--text-muted);">/100</span>
+            </div>
+        </div>
+        <div class="feature-box d-flex align-center justify-between" style="flex-direction: column;">
+            <h4 style="color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.85rem;">Questions Answered</h4>
+            <div style="font-size: 3rem; font-weight: 700; color: var(--text-main);">
+                {{ report.total_questions }}
+            </div>
+        </div>
+        <div class="feature-box text-center" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <h4 style="color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.85rem;">Hiring Recommendation</h4>
+            <div style="font-size: 1.8rem; font-weight: 700; {% if report.overall_score >= 80 %}color: var(--success);{% elif report.overall_score >= 60 %}color: var(--warning);{% else %}color: var(--error);{% endif %}">
+                {% if report.overall_score >= 90 %}
+                    Strong Hire 🌟
+                {% elif report.overall_score >= 75 %}
+                    Hire 👍
+                {% elif report.overall_score >= 60 %}
+                    Consider 🤔
+                {% else %}
+                    Needs Practice 📚
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <h3 class="mb-4 text-center gradient-text">Detailed Question Breakdown</h3>
+
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        {% for ev in report.evaluations %}
+        <div class="glass-panel" style="padding: 1.5rem; border: 1px solid var(--card-border);">
+            <div class="d-flex justify-between align-center mb-2" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
+                <h3 style="margin: 0; font-size: 1.2rem;">Question {{ loop.index }}</h3>
+                <div style="font-size: 1.5rem; font-weight: bold; {% if ev.score >= 80 %}color: var(--success);{% elif ev.score >= 60 %}color: var(--warning);{% else %}color: var(--error);{% endif %}">
+                    {{ ev.score }}/100
+                </div>
+            </div>
+            
+            <div class="mb-2 mt-2">
+                <span class="badge" style="background: rgba(255,255,255,0.1); color: var(--text-main);">{{ ev.rating }}</span>
+            </div>
+
+            <p style="color: var(--text-main); line-height: 1.5; margin-bottom: 1.5rem;">{{ ev.feedback }}</p>
+            
+            <div class="feedback-grid">
+                <div style="background: var(--success-bg); border-radius: 8px; padding: 1rem;">
+                    <strong style="color: var(--success); display: block; margin-bottom: 0.5rem;">Strengths:</strong>
+                    <ul style="margin: 0; padding-left: 1.2rem; color: #D1FAE5; font-size: 0.9rem;">
+                        {% for s in ev.strengths %}
+                        <li>{{ s }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div style="background: var(--error-bg); border-radius: 8px; padding: 1rem;">
+                    <strong style="color: var(--error); display: block; margin-bottom: 0.5rem;">Areas to Improve:</strong>
+                    <ul style="margin: 0; padding-left: 1.2rem; color: #FEE2E2; font-size: 0.9rem;">
+                        {% for i in ev.improvements %}
+                        <li>{{ i }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="text-center mt-4 pt-4" style="border-top: 1px solid var(--card-border);">
+        <a href="/" class="btn btn-primary btn-large" style="text-decoration: none; display: inline-block; max-width: 300px;">Start New Session</a>
+    </div>
+</div>
+{% endblock %}
