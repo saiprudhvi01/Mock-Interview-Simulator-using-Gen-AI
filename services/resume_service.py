@@ -38,7 +38,9 @@ def process_resume_upload(file, upload_folder, allowed_extensions):
                 "questions": [],
                 "current_question_index": 0,
                 "answers": [],  # Stores text answers only
-                "evaluations": None  # Will store batch evaluation results after interview
+                "evaluations": None,  # Will store batch evaluation results after interview
+                "difficulty_level": None,  # Will be set by user
+                "resume_analysis": None  # Will store resume analysis results
             }
             
             return {"session_id": session_id, "message": "Resume uploaded successfully"}, 200

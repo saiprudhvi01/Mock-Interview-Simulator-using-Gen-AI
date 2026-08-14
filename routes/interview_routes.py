@@ -4,12 +4,53 @@ from flask import Blueprint, request, jsonify, current_app
 from services.resume_service import get_session
 from services.question_service import QuestionService
 from services.evaluation_service import EvaluationService
+from services.resume_analysis_service import ResumeAnalysisService
 from werkzeug.utils import secure_filename
 
 interview_bp = Blueprint('interview', __name__)
 
 question_svc = QuestionService()
 eval_svc = EvaluationService()
+resume_analysis_svc = ResumeAnalysisService()
+
+@interview_bp.route('/set_difficulty', methods=['POST'])
+def set_difficulty():
+    """
+    Sets the difficulty level, performs resume analysis, and generates questions in a single API call.
+    """
+    data = request.json
+    session_id = data.get('session_id')
+    difficulty_level = data.get('difficulty_level')
+    
+    if difficulty_level not in ['Easy', 'Medium', 'Hard', 'Mixed']:
+        return jsonify({"error": "Invalid difficulty level. Must be Easy, Medium, Hard, or Mixed"}), 400
+    
+    session = get_session(session_id)
+    if not session:
+        return jsonify({"error": "Session not found"}), 404
+    
+    # Set difficulty level
+    session['difficulty_level'] = difficulty_level
+    
+    # Perform resume analysis
+    resume_analysis = resume_analysis_svc.analyze_resume(session['resume_text'])
+    if resume_analysis:
+        session['resume_analysis'] = resume_analysis
+    
+    # Generate questions in the same call
+    if not session['questions']:
+        questions = question_svc.generate_questions(session['resume_text'], difficulty_level)
+        if not questions:
+            return jsonify({"error": "Failed to generate questions"}), 500
+        session['questions'] = questions
+    
+    return jsonify({
+        "status": "success",
+        "difficulty_level": difficulty_level,
+        "resume_analysis": resume_analysis,
+        "questions": session['questions'],
+        "total_questions": len(session['questions'])
+    })
 
 @interview_bp.route('/generate', methods=['POST'])
 def generate_questions():
@@ -19,9 +60,14 @@ def generate_questions():
     session = get_session(session_id)
     if not session:
         return jsonify({"error": "Session not found"}), 404
+    
+    # Check if difficulty level is set
+    if not session.get('difficulty_level'):
+        return jsonify({"error": "Difficulty level not set. Please select difficulty first."}), 400
         
     if not session['questions']:
-        questions = question_svc.generate_questions(session['resume_text'])
+        difficulty_level = session['difficulty_level']
+        questions = question_svc.generate_questions(session['resume_text'], difficulty_level)
         if not questions:
             return jsonify({"error": "Failed to generate questions"}), 500
         session['questions'] = questions

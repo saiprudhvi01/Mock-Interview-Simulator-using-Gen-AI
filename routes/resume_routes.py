@@ -46,7 +46,8 @@ def report_page():
     report_data = {
         "overall_score": int(average_score),
         "total_questions": len(session['questions']),
-        "results": results
+        "results": results,
+        "resume_analysis": session.get('resume_analysis')
     }
     
     return render_template('report.html', report=report_data)

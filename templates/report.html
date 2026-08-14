@@ -80,5 +80,92 @@
     <div class="text-center mt-4 pt-4" style="border-top: 1px solid var(--card-border);">
         <a href="/" class="btn btn-primary btn-large" style="text-decoration: none; display: inline-block; max-width: 300px;">Start New Session</a>
     </div>
+
+    <!-- Resume Analysis Section -->
+    <div class="card mt-4" style="border: 2px solid var(--primary);">
+        <div class="text-center mb-4">
+            <h2 class="gradient-text">Resume Analysis</h2>
+            <p style="color: var(--text-muted); font-size: 1.1rem;">Comprehensive analysis of your resume quality and recommendations.</p>
+        </div>
+
+        <div class="features-grid mb-4">
+            <div class="feature-box text-center" style="display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(99, 102, 241, 0.05); border-color: rgba(99, 102, 241, 0.3);">
+                <h4 style="color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.85rem;">Overall Score</h4>
+                <div style="font-size: 3rem; font-weight: 700; color: var(--primary); line-height: 1;">
+                    {{ report.resume_analysis.score if report.resume_analysis else 0 }}<span style="font-size: 1.5rem; color: var(--text-muted);">/100</span>
+                </div>
+            </div>
+            <div class="feature-box d-flex align-center justify-between" style="flex-direction: column;">
+                <h4 style="color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.85rem;">ATS Score</h4>
+                <div style="font-size: 2.5rem; font-weight: 700; color: var(--text-main);">
+                    {{ report.resume_analysis.ats_score if report.resume_analysis else 0 }}<span style="font-size: 1.2rem; color: var(--text-muted);">/100</span>
+                </div>
+            </div>
+            <div class="feature-box text-center" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                <h4 style="color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.85rem;">Readability</h4>
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--success);">
+                    {{ report.resume_analysis.readability if report.resume_analysis else 'N/A' }}
+                </div>
+            </div>
+        </div>
+
+        {% if report.resume_analysis %}
+        <div class="feedback-grid mb-4">
+            <div class="glass-panel" style="background: var(--success-bg); border-color: rgba(16, 185, 129, 0.3); padding: 1.5rem;">
+                <h4 style="color: var(--success); margin-top: 0; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>
+                    Strengths
+                </h4>
+                <ul style="margin: 0; padding-left: 1.2rem; color: #D1FAE5; line-height: 1.6;">
+                    {% for s in report.resume_analysis.strengths %}
+                    <li>{{ s }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="glass-panel" style="background: var(--error-bg); border-color: rgba(239, 68, 68, 0.3); padding: 1.5rem;">
+                <h4 style="color: var(--error); margin-top: 0; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    Areas to Improve
+                </h4>
+                <ul style="margin: 0; padding-left: 1.2rem; color: #FEE2E2; line-height: 1.6;">
+                    {% for i in report.resume_analysis.improvements %}
+                    <li>{{ i }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="feedback-box mb-4">
+            <h4 style="color: var(--secondary); margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase;">Missing Skills:</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                {% for skill in report.resume_analysis.missing_skills %}
+                <span class="badge" style="background: rgba(239, 68, 68, 0.1); color: #FEE2E2;">{{ skill }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="feedback-box mb-4">
+            <h4 style="color: var(--primary); margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase;">Project Improvements:</h4>
+            <ul style="margin: 0; padding-left: 1.2rem; color: var(--text-main); line-height: 1.6;">
+                {% for p in report.resume_analysis.project_improvements %}
+                <li>{{ p }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="feedback-box">
+            <h4 style="color: var(--text-muted); margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase;">Recommendations to Improve Resume Score:</h4>
+            <ul style="margin: 0; padding-left: 1.2rem; color: var(--text-main); line-height: 1.6;">
+                {% for r in report.resume_analysis.recommendations %}
+                <li>{{ r }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% else %}
+        <div class="text-center" style="color: var(--text-muted); padding: 2rem;">
+            <p>Resume analysis not available for this session.</p>
+        </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

@@ -9,6 +9,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const loadingScreen = document.getElementById('loading-screen');
     const loadingMessage = document.getElementById('loading-message');
+    const difficultyScreen = document.getElementById('difficulty-screen');
+    const analysisScreen = document.getElementById('analysis-screen');
     const interviewScreen = document.getElementById('interview-screen');
     
     const questionCounter = document.getElementById('question-counter');
@@ -16,24 +18,137 @@ document.addEventListener("DOMContentLoaded", async () => {
     const questionText = document.getElementById('question-text');
     
     let currentQuestionData = null;
+    let resumeAnalysisData = null;
 
-    // Initial setup: Generate questions
-    try {
-        loadingScreen.style.display = 'block';
-        
-        const genRes = await fetch('/api/interview/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ session_id: sessionId })
+    // Handle difficulty selection
+    document.querySelectorAll('.difficulty-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const difficulty = btn.dataset.difficulty;
+            await handleDifficultySelection(difficulty);
         });
         
-        if (!genRes.ok) throw new Error("Failed to generate questions");
+        // Add hover effect
+        btn.addEventListener('mouseenter', () => {
+            btn.style.borderColor = 'var(--primary)';
+            btn.style.transform = 'translateY(-5px)';
+        });
         
-        await loadCurrentQuestion();
-    } catch (err) {
-        console.error(err);
-        alert("Error initializing interview session.");
-        window.location.href = '/';
+        btn.addEventListener('mouseleave', () => {
+            btn.style.borderColor = 'transparent';
+            btn.style.transform = 'translateY(0)';
+        });
+    });
+
+    // Handle start interview button
+    document.getElementById('start-interview-btn').addEventListener('click', async () => {
+        await startInterview();
+    });
+
+    async function handleDifficultySelection(difficulty) {
+        loadingScreen.style.display = 'block';
+        loadingMessage.textContent = 'Analyzing your resume and generating questions...';
+        difficultyScreen.style.display = 'none';
+
+        try {
+            const res = await fetch('/api/interview/set_difficulty', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    difficulty_level: difficulty
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Failed to set difficulty");
+
+            resumeAnalysisData = data.resume_analysis;
+            displayResumeAnalysis(resumeAnalysisData);
+
+        } catch (err) {
+            console.error(err);
+            alert("Error: " + err.message);
+            difficultyScreen.style.display = 'block';
+        } finally {
+            loadingScreen.style.display = 'none';
+        }
+    }
+
+    function displayResumeAnalysis(analysis) {
+        if (!analysis) {
+            // If no analysis available, skip to interview
+            startInterview();
+            return;
+        }
+
+        document.getElementById('analysis-score').textContent = analysis.score || 0;
+        document.getElementById('ats-score').textContent = analysis.ats_score || 0;
+        document.getElementById('readability').textContent = analysis.readability || 'Good';
+
+        // Strengths
+        const strengthsList = document.getElementById('analysis-strengths');
+        strengthsList.innerHTML = '';
+        (analysis.strengths || []).forEach(s => {
+            const li = document.createElement('li');
+            li.textContent = s;
+            strengthsList.appendChild(li);
+        });
+
+        // Improvements
+        const improvementsList = document.getElementById('analysis-improvements');
+        improvementsList.innerHTML = '';
+        (analysis.improvements || []).forEach(i => {
+            const li = document.createElement('li');
+            li.textContent = i;
+            improvementsList.appendChild(li);
+        });
+
+        // Missing skills
+        const missingSkillsDiv = document.getElementById('missing-skills');
+        missingSkillsDiv.innerHTML = '';
+        (analysis.missing_skills || []).forEach(skill => {
+            const span = document.createElement('span');
+            span.className = 'badge';
+            span.style.background = 'rgba(239, 68, 68, 0.1)';
+            span.style.color = '#FEE2E2';
+            span.textContent = skill;
+            missingSkillsDiv.appendChild(span);
+        });
+
+        // Project improvements
+        const projectImprovementsList = document.getElementById('project-improvements');
+        projectImprovementsList.innerHTML = '';
+        (analysis.project_improvements || []).forEach(p => {
+            const li = document.createElement('li');
+            li.textContent = p;
+            projectImprovementsList.appendChild(li);
+        });
+
+        // Recommendations
+        const recommendationsList = document.getElementById('recommendations');
+        recommendationsList.innerHTML = '';
+        (analysis.recommendations || []).forEach(r => {
+            const li = document.createElement('li');
+            li.textContent = r;
+            recommendationsList.appendChild(li);
+        });
+
+        analysisScreen.style.display = 'block';
+    }
+
+    async function startInterview() {
+        loadingScreen.style.display = 'block';
+        loadingMessage.textContent = 'Starting interview...';
+        analysisScreen.style.display = 'none';
+
+        try {
+            // Questions are already generated during difficulty selection
+            await loadCurrentQuestion();
+        } catch (err) {
+            console.error(err);
+            alert("Error initializing interview session.");
+            window.location.href = '/';
+        }
     }
 
     async function loadCurrentQuestion() {

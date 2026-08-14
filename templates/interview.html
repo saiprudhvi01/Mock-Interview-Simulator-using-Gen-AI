@@ -9,6 +9,105 @@
     <p style="color: var(--text-muted);">This takes just a moment based on your resume.</p>
 </div>
 
+<!-- Difficulty Selection Screen -->
+<div id="difficulty-screen" class="card fade-in" style="display: block; width: 100%; max-width: 700px;">
+    <div class="text-center mb-4">
+        <h2 class="gradient-text">Select Interview Difficulty</h2>
+        <p style="color: var(--text-muted); font-size: 1.1rem;">Choose the difficulty level for your personalized interview questions based on your resume.</p>
+    </div>
+
+    <div class="features-grid mb-4">
+        <button class="feature-box difficulty-btn" data-difficulty="Easy" style="cursor: pointer; transition: all 0.3s ease; border: 2px solid transparent;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🌱</div>
+            <h3 style="margin: 0 0 0.5rem 0; color: var(--success);">Easy</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">Fundamental concepts and basic questions</p>
+        </button>
+        
+        <button class="feature-box difficulty-btn" data-difficulty="Medium" style="cursor: pointer; transition: all 0.3s ease; border: 2px solid transparent;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">⚖️</div>
+            <h3 style="margin: 0 0 0.5rem 0; color: var(--warning);">Medium</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">Balanced mix of intermediate questions</p>
+        </button>
+        
+        <button class="feature-box difficulty-btn" data-difficulty="Hard" style="cursor: pointer; transition: all 0.3s ease; border: 2px solid transparent;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🔥</div>
+            <h3 style="margin: 0 0 0.5rem 0; color: var(--error);">Hard</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">Advanced concepts and complex scenarios</p>
+        </button>
+        
+        <button class="feature-box difficulty-btn" data-difficulty="Mixed" style="cursor: pointer; transition: all 0.3s ease; border: 2px solid transparent;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
+            <h3 style="margin: 0 0 0.5rem 0; color: var(--primary);">Mixed</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">Comprehensive mix of all difficulty levels</p>
+        </button>
+    </div>
+</div>
+
+<!-- Resume Analysis Screen -->
+<div id="analysis-screen" class="card slide-up" style="display: none; width: 100%; max-width: 900px;">
+    <div class="text-center mb-4">
+        <h2 class="gradient-text">Resume Analysis</h2>
+        <p style="color: var(--text-muted); font-size: 1.1rem;">Here's a comprehensive analysis of your resume.</p>
+    </div>
+
+    <div class="features-grid mb-4">
+        <div class="feature-box text-center" style="display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(99, 102, 241, 0.05); border-color: rgba(99, 102, 241, 0.3);">
+            <h4 style="color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.85rem;">Overall Score</h4>
+            <div style="font-size: 4rem; font-weight: 700; color: var(--primary); line-height: 1;">
+                <span id="analysis-score">0</span><span style="font-size: 1.5rem; color: var(--text-muted);">/100</span>
+            </div>
+        </div>
+        <div class="feature-box d-flex align-center justify-between" style="flex-direction: column;">
+            <h4 style="color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.85rem;">ATS Score</h4>
+            <div style="font-size: 3rem; font-weight: 700; color: var(--text-main);">
+                <span id="ats-score">0</span><span style="font-size: 1.5rem; color: var(--text-muted);">/100</span>
+            </div>
+        </div>
+        <div class="feature-box text-center" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <h4 style="color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.85rem;">Readability</h4>
+            <div style="font-size: 1.8rem; font-weight: 700; color: var(--success);">
+                <span id="readability">Good</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="feedback-grid mb-4">
+        <div class="glass-panel" style="background: var(--success-bg); border-color: rgba(16, 185, 129, 0.3); padding: 1.5rem;">
+            <h4 style="color: var(--success); margin-top: 0; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>
+                Strengths
+            </h4>
+            <ul id="analysis-strengths" style="margin: 0; padding-left: 1.2rem; color: #D1FAE5; line-height: 1.6;"></ul>
+        </div>
+        <div class="glass-panel" style="background: var(--error-bg); border-color: rgba(239, 68, 68, 0.3); padding: 1.5rem;">
+            <h4 style="color: var(--error); margin-top: 0; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                Areas to Improve
+            </h4>
+            <ul id="analysis-improvements" style="margin: 0; padding-left: 1.2rem; color: #FEE2E2; line-height: 1.6;"></ul>
+        </div>
+    </div>
+
+    <div class="feedback-box mb-4">
+        <h4 style="color: var(--secondary); margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase;">Missing Skills:</h4>
+        <div id="missing-skills" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
+    </div>
+
+    <div class="feedback-box mb-4">
+        <h4 style="color: var(--primary); margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase;">Project Improvements:</h4>
+        <ul id="project-improvements" style="margin: 0; padding-left: 1.2rem; color: var(--text-main); line-height: 1.6;"></ul>
+    </div>
+
+    <div class="feedback-box mb-4">
+        <h4 style="color: var(--text-muted); margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase;">Recommendations:</h4>
+        <ul id="recommendations" style="margin: 0; padding-left: 1.2rem; color: var(--text-main); line-height: 1.6;"></ul>
+    </div>
+
+    <div class="text-center mt-4">
+        <button id="start-interview-btn" class="btn btn-primary btn-large" style="max-width: 400px;">Start Interview →</button>
+    </div>
+</div>
+
 <div id="interview-screen" class="card fade-in" style="display: none; width: 100%; max-width: 900px;">
     <!-- Progress Bar -->
     <div class="progress-container">
@@ -46,6 +145,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/recorder.js') }}?v=5"></script>
-<script src="{{ url_for('static', filename='js/interview.js') }}?v=5"></script>
+<script src="{{ url_for('static', filename='js/recorder.js') }}?v=6"></script>
+<script src="{{ url_for('static', filename='js/interview.js') }}?v=6"></script>
 {% endblock %}
