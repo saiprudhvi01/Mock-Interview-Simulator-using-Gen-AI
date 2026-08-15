@@ -1,7 +1,7 @@
 import os
 import uuid
 from flask import Blueprint, request, jsonify, current_app
-from services.resume_service import get_session
+from services.resume_service import get_session, update_session
 from services.question_service import QuestionService
 from services.evaluation_service import EvaluationService
 from services.resume_analysis_service import ResumeAnalysisService
@@ -44,6 +44,9 @@ def set_difficulty():
             return jsonify({"error": "Failed to generate questions"}), 500
         session['questions'] = questions
     
+    # Save updated session to persistent storage
+    update_session(session_id, session)
+    
     return jsonify({
         "status": "success",
         "difficulty_level": difficulty_level,
@@ -71,6 +74,7 @@ def generate_questions():
         if not questions:
             return jsonify({"error": "Failed to generate questions"}), 500
         session['questions'] = questions
+        update_session(session_id, session)
         
     return jsonify({"questions": session['questions'], "total": len(session['questions'])})
 
@@ -107,6 +111,7 @@ def submit_answer():
     
     # Store the answer
     session['answers'].append(answer)
+    update_session(session_id, session)
     
     return jsonify({"status": "success"})
 
@@ -120,6 +125,7 @@ def next_question():
         return jsonify({"error": "Session not found"}), 404
         
     session['current_question_index'] += 1
+    update_session(session_id, session)
     
     return jsonify({"status": "success"})
 
@@ -151,6 +157,7 @@ def evaluate_batch():
     
     # Store the batch evaluation results
     session['evaluations'] = evaluation_result
+    update_session(session_id, session)
     
     return jsonify(evaluation_result)
 

@@ -4,3 +4,4 @@ __pycache__/
 uploads/
 venv/
 .pytest_cache/
+sessions.db

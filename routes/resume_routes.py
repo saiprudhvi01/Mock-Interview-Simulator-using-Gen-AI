@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, current_app, render_template
-from services.resume_service import process_resume_upload, get_session
+from services.resume_service import process_resume_upload, get_session, delete_session
 
 resume_bp = Blueprint('resume', __name__)
 
@@ -49,5 +49,9 @@ def report_page():
         "results": results,
         "resume_analysis": session.get('resume_analysis')
     }
+    
+    # Optionally delete session after report is viewed to save space
+    # Comment out if you want to keep sessions for debugging
+    # delete_session(session_id)
     
     return render_template('report.html', report=report_data)

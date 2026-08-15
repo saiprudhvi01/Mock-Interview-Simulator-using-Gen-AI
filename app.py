@@ -35,6 +35,11 @@ def report():
 
 @app.route('/api/health')
 def health_check():
+    # Periodically clean up old sessions (every 10th health check)
+    import random
+    if random.random() < 0.1:  # 10% chance
+        from services.resume_service import cleanup_old_sessions
+        cleanup_old_sessions(hours=24)
     return jsonify({"status": "ok"})
 
 if __name__ == '__main__':
