@@ -67,30 +67,83 @@ class QuestionService:
         payload = {
             "contents": [{
                 "parts": [{"text": prompt}]
-            }]
+            }],
+            "generationConfig": {
+                "maxOutputTokens": 8000,
+                "temperature": 0.7
+            }
         }
         
         try:
-            response = requests.post(url, headers={"Content-Type": "application/json"}, json=payload, timeout=30)
+            response = requests.post(url, headers={"Content-Type": "application/json"}, json=payload, timeout=60)
             response.raise_for_status()
             
             data = response.json()
             content = data['candidates'][0]['content']['parts'][0]['text']
             
+            print(f"Raw response length: {len(content)}")
+            print(f"First 500 chars: {content[:500]}")
+            
             # Clean up potential markdown formatting that Gemini sometimes adds
             content = content.strip()
-            if content.startswith("```json"):
-                content = content[7:]
-            if content.startswith("```"):
-                content = content[3:]
-            if content.endswith("```"):
-                content = content[:-3]
-                
+            
+            # Remove markdown code blocks
+            if "```json" in content:
+                # Find the start and end of the JSON block
+                start = content.find("```json") + 7
+                end = content.rfind("```")
+                if end > start:
+                    content = content[start:end].strip()
+            elif "```" in content:
+                start = content.find("```") + 3
+                end = content.rfind("```")
+                if end > start:
+                    content = content[start:end].strip()
+            
+            # Try to find JSON array in the content
+            if content.startswith("["):
+                # Find the matching closing bracket
+                bracket_count = 0
+                end_index = 0
+                for i, char in enumerate(content):
+                    if char == '[':
+                        bracket_count += 1
+                    elif char == ']':
+                        bracket_count -= 1
+                        if bracket_count == 0:
+                            end_index = i + 1
+                            break
+                if end_index > 0:
+                    content = content[:end_index]
+            
+            print(f"Cleaned content length: {len(content)}")
+            print(f"Last 500 chars: {content[-500:]}")
+            
             questions = json.loads(content.strip())
+            
+            # Validate the structure
+            if not isinstance(questions, list):
+                print("Error: Response is not a list")
+                return None
+                
+            if len(questions) != 20:
+                print(f"Warning: Expected 20 questions, got {len(questions)}")
+                
+            # Validate each question has required fields
+            for q in questions:
+                if not all(k in q for k in ['id', 'question', 'category', 'difficulty']):
+                    print(f"Error: Question missing required fields: {q}")
+                    return None
+            
             return questions
             
+        except json.JSONDecodeError as e:
+            print(f"JSON parsing error: {e}")
+            print(f"Content that failed to parse: {content if 'content' in locals() else 'N/A'}")
+            return None
         except Exception as e:
             print(f"Error calling Gemini Question API: {e}")
             if 'response' in locals():
-                print(f"Response: {response.text}")
+                print(f"Response status: {response.status_code}")
+                print(f"Response: {response.text[:1000]}")
             return None

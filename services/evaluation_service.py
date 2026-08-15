@@ -67,23 +67,78 @@ class EvaluationService:
         }
 
         try:
-            response = requests.post(url, headers={"Content-Type": "application/json"}, json=payload, timeout=60)
+            response = requests.post(url, headers={"Content-Type": "application/json"}, json=payload, timeout=90)
             response.raise_for_status()
             
             data = response.json()
             content = data['candidates'][0]['content']['parts'][0]['text']
             
+            print(f"Batch evaluation raw response length: {len(content)}")
+            print(f"First 500 chars: {content[:500]}")
+            
             # Clean up markdown JSON wrapper
             content = content.strip()
-            if content.startswith("```json"): content = content[7:]
-            if content.startswith("```"): content = content[3:]
-            if content.endswith("```"): content = content[:-3]
+            
+            # Remove markdown code blocks
+            if "```json" in content:
+                start = content.find("```json") + 7
+                end = content.rfind("```")
+                if end > start:
+                    content = content[start:end].strip()
+            elif "```" in content:
+                start = content.find("```") + 3
+                end = content.rfind("```")
+                if end > start:
+                    content = content[start:end].strip()
+            
+            # Try to find JSON object in the content
+            if content.startswith("{"):
+                # Find the matching closing brace
+                brace_count = 0
+                end_index = 0
+                for i, char in enumerate(content):
+                    if char == '{':
+                        brace_count += 1
+                    elif char == '}':
+                        brace_count -= 1
+                        if brace_count == 0:
+                            end_index = i + 1
+                            break
+                if end_index > 0:
+                    content = content[:end_index]
+            
+            print(f"Batch evaluation cleaned content length: {len(content)}")
             
             evaluation = json.loads(content.strip())
+            
+            # Validate structure
+            if 'results' not in evaluation:
+                print("Error: Evaluation response missing 'results' key")
+                return None
+                
+            if not isinstance(evaluation['results'], list):
+                print("Error: 'results' is not a list")
+                return None
+                
+            if len(evaluation['results']) != 20:
+                print(f"Warning: Expected 20 results, got {len(evaluation['results'])}")
+            
+            # Validate each result has required fields
+            required_keys = ['question_number', 'question', 'candidate_answer', 'suggested_answer', 'score', 'feedback']
+            for r in evaluation['results']:
+                if not all(k in r for k in required_keys):
+                    print(f"Error: Result missing required fields: {r}")
+                    return None
+            
             return evaluation
             
+        except json.JSONDecodeError as e:
+            print(f"Batch evaluation JSON parsing error: {e}")
+            print(f"Content that failed to parse: {content if 'content' in locals() else 'N/A'}")
+            return None
         except Exception as e:
             print(f"Error calling Gemini Batch Evaluation API: {e}")
             if 'response' in locals():
-                print(f"Response: {response.text}")
+                print(f"Response status: {response.status_code}")
+                print(f"Response: {response.text[:1000]}")
             return None
